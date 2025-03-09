@@ -105,7 +105,7 @@ def create_topic_concept_relationships(driver, safe_topic_name, topic_name, topi
             query = f"""
             MATCH (concept:ConceptNode {{concept_name: "{concept}"}}),
                   (topic:TopicNode {{topic_name: "{topic_name}"}})
-            CREATE (concept)-[:relation_topics]->(topic)
+            CREATE (concept)-[:HAS_TOPIC]->(topic)
             """
 
             result = run_cypher_query(driver, query)
