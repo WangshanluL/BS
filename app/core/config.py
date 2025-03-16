@@ -65,6 +65,7 @@ class Settings(BaseSettings):
     NEO4J_USER: str
     NEO4J_PASSWORD: str
     NEO4J_URL: str
+    TAVILY_SEARCH_API:str
 
     class Config:
         env_file = ENV_PATH  # 使用确定的绝对路径

@@ -15,7 +15,7 @@ async def fetch_concept_nodes(driver: AsyncDriver):
             async for record in result:  # 逐行获取数据
                 concept_name = record["concept_name"] or ""
                 description = record["description"] or ""
-                concept_list.append(f"{concept_name}:{description}")  # 组成字符串
+                concept_list.append(f"{concept_name}->{description}")  # 组成字符串
 
     except Exception as e:
         print(f"Error fetching concept nodes: {e}")
