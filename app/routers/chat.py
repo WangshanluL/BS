@@ -2,7 +2,7 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.services.websocket_manager import ConnectionManager
 from app.utils.ai_client import client
-from app.core.logging import logger
+from app.core.log_config import logger
 import json
 import asyncio
 
@@ -25,14 +25,12 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             messages = [{"role":"system","content":f"""
             你是一名大学生，帮我输出搞笑文案
-
             """}]
+            # 这个是需要从数据库里获取的，后面再写
+
             try:
-                # 尝试解析JSON，支持更复杂的前端请求
                 parsed_data = json.loads(data)
                 user_input = parsed_data.get("message", "")
-                # 可以添加其他参数，例如模型选择、历史清除等
-                # clear_history = parsed_data.get("clearHistory", False)
                 messages.append({"role":"user","content":user_input})
 
 

@@ -79,7 +79,7 @@ def generate_item_description(value):
 
 def transform_json():
     """转换原始JSON到新的格式"""
-    json_data = json.loads(data)
+    json_data = data
     new_data = {}
     
     # 处理每个主题

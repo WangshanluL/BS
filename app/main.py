@@ -1,8 +1,9 @@
 from fastapi import FastAPI
-from app.core import security, logging
+from app.core import security, log_config
 from app.routers import chat ,users
+#from app.db.db_neo4j import async_neo4j_driver
 
-logger = logging.configure_logging()
+logger = log_config.configure_logging()
 
 app = FastAPI()
 security.add_cors(app)
