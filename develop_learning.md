@@ -1,4 +1,4 @@
-- [ ] 任务1：完成chat逻辑
+- [x] 任务1：完成chat逻辑
 
 从数据库获取历史聊天记录的等下再实现，根据历史聊天记录+用户的prompt，然后先实现从neo4j检索到信息，然后组织一下检索的信息，能够把检索到的节点按照数宗数据库的格式返回给前段，然后再模仿之前的从tavily search api从互联网上检索知识相关信息。根据这些信息让大模型回答用户问题。
 
@@ -16,7 +16,27 @@
 
 第三种就是结合一二，但是只查询与相关知识点相关的题目和video，父节点的其他子节点的信息不返回。
 
+- [ ] 修改前端代码，先实现前后端websocket连接，然后接收到信息。
 
+- [ ] 修改前端样式，1，可视化节点，2，webreference  3，聊天记录
+
+- [ ] 增加前端功能，比如能够下载题目，可以把题库也存到mysql数据库里
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  这个个性化路线可以是样式，比如选择哪些节点不太熟悉。
+
+  根据知识点定制学习路线，从neo4j数据库中检索到是哪个章节，然后把那个章节的知识图谱可视化出来，然后把题目和视频均可视化出来，然后一键制定学习计划。单独的一个页面，可以模仿数宗的样式，一步步制定出个性化的学习路线。
+
+  
 
 
 
@@ -52,26 +72,7 @@
 
 
 
-请你帮我写代码，需求是根据我提供的ConceptNode的concept_name属性从知识图谱从检索到这些节点，我会提供一个字符串列表，然后请你帮我根据cypher语句检索出这些节点的相关题目节点TopicNode，关系是HAS_TOPIC，并且检索出视频节点VideoNode，关系是HAS_VIDEO，然后找到其父节点，父节点与其的关系是HAS_CONCEPT，父节点是SubChapterNode，并找到父节点下的所有ConceptNode，把所有这些节点构建成一个nodes列表，列表中每一项都是一个字典，字典有下面四个属性{id,name,category,value},id是根据节点开始以此递增，从0开始编号，name就是每个节点的一个属性（不同节点属性不相同，ConceptNode的是concept_name，同理VideoNode是video_name，SubChapterNode是subchapter_name），不同节点的category不同，ChapterNode 1、 SubChapterNode2、ConceptNode 3 、TopicNode 4、VideoNode 5，value是所有节点的description属性。
 
-并且构建一个links数组，数组里同样每个都是字典，字典里有{source,target,type},source和target都是上面的节点id，代表从id为source的节点指向id为target的节点，type就与原来边的名字一样即可，比如HAS_CONCEPT，我已经连接好了neo4j数据库，你只需要帮我写一个函数，这个函数完成这些功能即可,我已经连接好数据库，你直接使用async_neo4j_driver对象即可：from neo4j import AsyncDriver, AsyncGraphDatabase
-from app.core.config import settings
-from app.core.log_config import logger
-
-def create_neo4j_driver(neo4j_uri: str) -> AsyncDriver:
-    try:
-        # 创建Neo4j驱动
-        driver = AsyncGraphDatabase.driver(
-            neo4j_uri,
-            auth=(settings.NEO4J_USER, settings.NEO4J_PASSWORD)
-        )
-        logger.info(f'Neo4j数据库连接成功, 连接地址: {neo4j_uri}')
-        return driver
-    except Exception as e:
-        logger.info('❌ Neo4j数据库连接失败', e)
-
-
-async_neo4j_driver = create_neo4j_driver(settings.NEO4J_URL)
 
 
 

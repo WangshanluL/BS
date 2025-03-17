@@ -62,7 +62,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
                 # 发送结束标记
-                await manager.send_personal_message("[END]", websocket)
+                await manager.send_personal_message(ai_response+"[END]", websocket)
                 logger.info(f"ai response :{ai_response}")
             except Exception as e:
                 logger.error(f"AI处理异常: {str(e)}")
