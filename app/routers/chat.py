@@ -3,6 +3,8 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.services.websocket_manager import ConnectionManager
 from app.utils.ai_client import client
 from app.core.log_config import logger
+from app.services.ChatWithRag import enhanced_prompt_with_context
+
 import json
 import asyncio
 
@@ -19,26 +21,22 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     # 为会话创建唯一ID（此处简化为使用WebSocket对象地址）
 
+
+    # 详细逻辑:首先根据传来的用户id和
+
+
     try:
         while True:
             # 接收用户消息
             data = await websocket.receive_text()
             messages = [{"role":"system","content":f"""
-            你是一名大学生，帮我输出搞笑文案
             """}]
             # 这个是需要从数据库里获取的，后面再写
-
-            try:
-                parsed_data = json.loads(data)
-                user_input = parsed_data.get("message", "")
-                messages.append({"role":"user","content":user_input})
-
-
-
-            except json.JSONDecodeError:
-                # 如果不是JSON，就当作纯文本处理
-                user_input = data
-
+            parsed_data = json.loads(data)
+            user_input = parsed_data.get("message", "")
+            LLM_PROMPT, relevant_nodes_links, tavily_results = await enhanced_prompt_with_context(user_input)
+            logger.info(f"LLM_PROMPT:{LLM_PROMPT}")
+            messages.append({"role":"user","content":LLM_PROMPT})
 
             try:
                 # 创建大模型流式响应
@@ -60,7 +58,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         if content:  # 过滤空内容
                             ai_response += content
                             # 发送消息内容
-                            await manager.send_personal_message(content, websocket)
+                            await manager.send_personal_message(ai_response, websocket)
 
 
                 # 发送结束标记

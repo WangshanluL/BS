@@ -8,8 +8,15 @@ from typing import List, Dict, Any
 import re
 pattern = r'^(.*?)->'
 
+# 下面代码能够保证在main函数启动也能找到路径，直接..//会找不到路径
+from pathlib import Path
+# 获取 `RagFromNeo4j.py` 所在目录
+base_dir = Path(__file__).resolve().parent
+
+# 计算 `output.txt` 的绝对路径
+file_path = base_dir.parent / "utils" / "output.txt"
 # 读取文件内容
-with open("../utils/output.txt", "r", encoding="utf-8") as file:
+with open(file_path, "r", encoding="utf-8") as file:
     lines = [line.strip() for line in file.readlines()]  # 去除换行符并存入列表
 
 # 定义异步运行函数
@@ -72,7 +79,7 @@ async def retrieve_knowledge_graph(concept_names_list: list[str]):
                 result = await session.run(query)
                 return await result.data()
 
-        # 3. 查询父节点下的所有ConceptNode(同级概念)
+        # 3. 查询父节点下的所有ConceptNode(同级概念)  如果两个知识节点在同一父节点下会导致重复
         async def get_sibling_concepts(concept_names_list):
             concept_names_param = ', '.join([f'"{name}"' for name in concept_names_list])
             query = f"""
@@ -334,6 +341,15 @@ async def retrieve_knowledge_graph(concept_names_list: list[str]):
     }
 #再写两个函数，就是根据这个选择出相关词，然后两步筛选节点，然后修改格式，然后构成语料输出   `
 # 运行异步函数
+async def ragFromNeo4j(prompt:str):
+    relevant_concept = await rerank_and_extract_conceptNode(prompt)
+    relevant_nodes_links = await retrieve_knowledge_graph(relevant_concept)
+    res_corpus = [r["value"] for r in relevant_nodes_links["nodes"]]
+    str_corpus = "".join(res_corpus)
+    logger.info(f"从知识图谱中检索到的语料为: {str_corpus}\n")
+    logger.info(f"检索到的节点与边信息为: {relevant_nodes_links}")
+    return str_corpus,relevant_nodes_links
+
 if __name__ == "__main__":
     #asyncio.run(rerank_and_extract_conceptNode("为什么操作系统要区分内核态和用户态？什么情况下需要切换？"))  # 正确执行异步函数
-    asyncio.run(retrieve_knowledge_graph(['模式', '实现方式', '系统调用']))
+    asyncio.run(ragFromNeo4j("轮询 IO、中断 IO 和 DMA 方式有什么区别？DMA 如何提升 IO 效率？"))

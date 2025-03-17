@@ -191,3 +191,4 @@ async_neo4j_driver = create_neo4j_driver(settings.NEO4J_URL)
 
 
 
+下午模仿原来后端代码，把后端一些常见服务写了，数据库建好，想一下主要的业务，然后前端页面改动一下，前端从github拉取一下，前端能够实习1.名字改掉 2.能实现聊天那个页面,reference 的图画好。引用也加上
