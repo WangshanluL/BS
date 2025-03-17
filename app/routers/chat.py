@@ -37,7 +37,7 @@ async def websocket_endpoint(websocket: WebSocket):
             LLM_PROMPT, relevant_nodes_links, tavily_results = await enhanced_prompt_with_context(user_input)
             logger.info(f"LLM_PROMPT:{LLM_PROMPT}")
             messages.append({"role":"user","content":LLM_PROMPT})
-
+            await manager.send_json_message({"relevant_nodes_links":relevant_nodes_links,"tavily_results":tavily_results},websocket)
             try:
                 # 创建大模型流式响应
                 completion = client.chat.completions.create(
