@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any, Union
 
 # Import your models
-from app.db.models import (
+from app.models.models import (
     UserInfo, MasterChat, MasterMessage, EmailCode, ForumBoard,
     ForumArticle, ForumArticleAttachment, ForumArticleAttachmentDownload,
     ForumComment, LikeRecord, SysSetting, UserIntegralRecord, UserMessage

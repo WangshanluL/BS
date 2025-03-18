@@ -9,7 +9,7 @@ from sqlalchemy import text
 from app.db.database import get_db, engine, Base
 
 # Import models and crud operations
-from app.db.models import (
+from app.models.models import (
     UserInfo, MasterChat, MasterMessage, ForumBoard,
     ForumArticle, ForumComment, UserMessage
 )

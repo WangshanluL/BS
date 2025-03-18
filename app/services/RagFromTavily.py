@@ -19,25 +19,30 @@ async def search_tavily(query: str, max_results: int = 6) -> Dict[str, Any]:
     """
 
     # Create a function to run in a thread
-    def run_search():
-        tavily_client = TavilyClient(api_key=settings.TAVILY_SEARCH_API)
-        return tavily_client.search(query=query, max_results=max_results)
 
-    # Run the synchronous Tavily search in a thread pool to make it async
-    loop = asyncio.get_event_loop()
-    response = await loop.run_in_executor(None, run_search)
+    # def run_search():
+    #     tavily_client = TavilyClient(api_key=settings.TAVILY_SEARCH_API)
+    #     return tavily_client.search(query=query, max_results=max_results)
+    #
+    # # Run the synchronous Tavily search in a thread pool to make it async
+    # loop = asyncio.get_event_loop()
+    # response = await loop.run_in_executor(None, run_search)
+    #
+    # # Extract the results from the response
+    # results = response.get('results', [])
+    #
+    # # Format the contents as requested
+    # contents = ""
+    # for i, result in enumerate(results):
+    #     contents += f"网页{i + 1}：{result.get('content', '')}\n\n"
+    #
+    # # Remove the last newlines if they exist
+    # contents = contents.rstrip()
+    # logger.info(f"互联网检索信息为:{results}")
+    #
 
-    # Extract the results from the response
-    results = response.get('results', [])
-
-    # Format the contents as requested
     contents = ""
-    for i, result in enumerate(results):
-        contents += f"网页{i + 1}：{result.get('content', '')}\n\n"
-
-    # Remove the last newlines if they exist
-    contents = contents.rstrip()
-    logger.info(f"互联网检索信息为:{results}")
+    results = [{'title': '线程（计算机术语）_百度百科', 'url': 'https://baike.baidu.com/item/线程/103101', 'content': '线程（英语：thread）是操作系统能够进行运算调度的最小单位。它被包含在进程之中，是进程中的实际运作单位。一条线程指的是进程中一个单一顺序的控制流，一个进程中可以并发多个线程，每条线程并行执行不同的任务。在Unix System V及SunOS中也被称为轻量进程（lightweight processes），但轻量进程更', 'score': 0.90849644, 'raw_content': None}, {'title': '从操作系统的角度来看，什么是线程与进程(超级详细) - 知乎', 'url': 'https://zhuanlan.zhihu.com/p/452969421', 'content': '线程. 在传统的操作系统中，每个进程都有一个地址空间和一个控制线程。事实上，这是大部分进程的定义。不过，在许多情况下，经常存在同一地址空间中运行多个控制线程的情形，这些线程就像是分离的进程。下面我们就着重探讨一下什么是线程. 线程的使用', 'score': 0.81665546, 'raw_content': None}, {'title': '什么是线程？为什么需要线程？和进程的区别？-阿里云开发者社区', 'url': 'https://developer.aliyun.com/article/1336220', 'content': '什么是线程？为什么需要线程？和进程的区别？-阿里云开发者社区 开发者社区 个人 开发者社区 个人 首页 探索云世界 热门 百炼大模型Modelscope模型即服务弹性计算通义灵码云原生数据库云效DevOps龙蜥操作系统 云计算 弹性计算无影存储网络倚天 云原生 容器serverless中间件微服务可观测消息队列 数据库 关系型数据库NoSQL数据库数据仓库数据管理工具PolarDB开源向量数据库 大数据 大数据计算实时数仓Hologres实时计算FlinkE-MapReduceDataWorksElasticsearch机器学习平台PAI智能搜索推荐数据可视化DataV 人工智能 机器学习平台PAI视觉智能开放平台智能语音交互自然语言处理多模态模型pythonsdk通用模型 开发与运维 云效DevOps钉钉宜搭镜像站 问产品 动手实践 官方博客 考认证 TIANCHI大赛 活动广场 任务中心高校计划训练营直播开发者评测乘风者计划 下载 镜像站技术资料 开发者社区 个人 开发者社区 个人 开发者社区 开发与运维 文章 正文 什么是线程？为什么需要线程？和进程的区别？ 版权 版权声明： 本文内容由阿里云实名注册用户自发贡献，版权归原作者所有，阿里云开发者社区不拥有其著作权，亦不承担相应法律责任。具体规则请查看《 阿里云开发者社区用户服务协议》和 《阿里云开发者社区知识产权保护指引》。如果您发现本社区中有涉嫌抄袭的内容，填写 侵权投诉表单进行举报，一经查实，本社区将立刻删除涉嫌侵权内容。 简介： 什么是线程？为什么需要线程？和进程的区别？ 前言 在学习线程之前，必须了解什么是进程，线程借助进程的资源而实现的，也可以说是进程的子任务，是为了改进进程而出现的。进程的学习：http://t.csdn.cn/uHb93 一.线程是什么？ 1.1.为什么需要线程 在执行多个任务时，多进程就已经可以实现并发编程的效果了，可是却有一个明显的缺点。 缺点：进程的创建都需要大量的资源（例如：PCB、硬盘资源等），因此开销就变大了；而且创建时需要大量的资源，也是需要更多的时间，因此导致速度变慢了。 *解决方法：为了解决进程的缺点，于是提出了可以 共享 两字，先创建一个进程并且分配好资源，后续创建的进程创建时只需要分配一个简单PCB，然后 共享* 第一个进程的文件描述表、内存硬盘等资源，从而使开销减小、速度更快。而后续的进程便是轻量级进程----线程 举例说明：四个人去餐厅吃饭，如果四个人在四张桌子上吃饭每张桌子3个菜，开销为：四个桌子、12个盘子。时间：炒12个菜以及洗12个碗的速度。但是如果四个人在同一张桌子吃饭，并且把菜合在一起，那么开销为：1个桌子、3个盘子。时间：炒3个菜以及洗3个碗的速度。 1.2线程的概念 线程（thread）是操作系统能够进行运算调度的最小单位。线程被包含在进程之中，是进程中的实际运作单位。一条线程指的是进程中一个单一顺序的控制流，一一个进程中可以并发多个线程，每条线程并行执行不同的任务。在Unix System V及SunOS中也被称为 轻量进程（lightweight processes），但轻量进程更多指内核线程（kernel thread），而把用户线程称为线程。 *特点：* 线程与资源分配无关，它属于某一个进程，并与进程内的其他线程一起共享进程的资源。 线程只由相关堆栈（系统栈或用户栈）寄存器和线程控制表TCB组成。寄存器可被用来存储线程内的局部变量，但不能存储其他线程的相关变量。 通常在一个进程中可以包含若干个线程，它们可以利用进程所拥有的资源。 额外补充：在windows里不是PCB而是TCB，但是linux中依然采用的是PCB。 在linux中：一个PCB对应一个线程，而进程有多个线程(不是无上限的线程），因此多个PCB对应一个进程。 1.3线程和进程的区别 简单回忆一下进程的特点： 进程是资源分配的基本单位。所有与该进程有关的资源，都被记录在进程控制块PCB中。以表示该进程拥有这些资源或正在使用它们。 进程也是抢占处理机的调度单位，它拥有一个完整的虚拟地址空间。当进程发生调度时，不同的进程拥有不同的虚拟地址空间，而同一进程内的不同线程共享同一地址空间。 因此线程和进程的主要区别有： 地址空间和其它资源（如打开文件）：进程间相互独立，同一进程的各线程间共享。某进程内的线程在其它进程不可见。 通信：进程间通信IPC，线程间可以直接读写进程数据段（如全局变量）来进行通信——需要进程同步和互斥手段的辅助，以保证数据的一致性。 调度和切换：线程上下文切换比进程上下文切换要快得多。 在多线程OS中，线程不是一个可执行的实体。 结：进程是操作系统进行资源分配的基本单位，线程是操作系统进行调度的基本单位。 二.线程的生命周期 线程的生命周期分为了5个阶段，创建—>就绪—>运行—>死亡，运行的中途可能会有阻塞。 新建阶段：创建一个线程的对象，此时线程处于新建状态。 就绪阶段：线程对象调用start方法后，线程进入线程队列等待CPU时间片，具备了运行的条件。 运行阶段：当就绪的线程被调度且获得CPU资源时，进入运行状态，系统自动决定CPU分配，并执行获得CPU执行权的线程。 阻塞状态：在某些特殊情况下，如被挂起或执行输入输出操作时 死亡阶段：线程完成了全部工作、被提前强制终止或出现异常导致线程结束，线程执行结束，它的寄存器上下文以及堆栈内容等将被释放。 注： 以上的各种情况，是可以通过Java来实现的，各种阶段都有其对应的方法执行。 一般情况下，父线程与子线程相互不影响，即子线程结束，父线程不一定结束；父线程结束，子线程不一定结束；父线程异常，子线程不一定异常；子线程异常，父线程不一定异常。但当设置守护线程等特殊操作时，父线程与子线程会发生相互影响。 三.认识多线程 我们主要学习的是多线程，多线程是指从软件或者硬件上实现多个线程并发执行的技术。具有多线程能力的计算机因有硬件支持而能够在同一时间执行多于一个线程，进而提升整体处理性能。在一个程序中，这些独立运行的程序片段叫作“线程”，利用它编程的概念就叫作“多线程处理”。可以通过Java实现。 1.多线程的特点： 每一个线程都是独立执行流 多个线程之间都是并发执行 2.Java创建多线程的方式： 继承Thread类 实现Runnable接口 使用lambda 使用线程池 使用Callable 注：方法1,2,5可以搭配匿名内部类实现 3.Java当中观察线程 方法： jdk文件夹--->bin文件夹--->jconsole调试工具 如果打不开，可以选择管理员打开 在多线程当中，我们还会学到锁这个概念，因为有锁，所以才会有更多的操作空间，保证数据的准确性以及线程的等待执行。 总结 线程学习是为了更好的理解多线程的操作，多线程中知识点很多，而其根本就是线程的生命周期，且加锁操作更为重要，保证数据的原子性，而加锁又会产生更多不明确的情况，因此需要耐心学习。 tq02 目录 文档 | 开发者社区 | 天池大赛 | 培训与认证', 'score': 0.79580134, 'raw_content': None}, {'title': '进程线程（一）——基础知识，什么是进程 ... - Csdn博客', 'url': 'https://blog.csdn.net/wangguchao/article/details/109002488', 'content': '文章浏览阅读2.1w次，点赞49次，收藏187次。1. 什么是进程和线程现代操作系统比如Mac OS X，UNIX，Linux，Windows等，都是支持"多任务"的操作系统。1.1 百科解释进程（Process）是计算机中的程序关于某数据集合上的一次运行活动，是系统进行资源分配和调度的基本单位，是操作系统结构的基础。', 'score': 0.78074646, 'raw_content': None}, {'title': '【操作系统篇】第四篇——线程(概念，实现方式，模型，状态与转换)-阿里云开发者社区', 'url': 'https://developer.aliyun.com/article/1153445', 'content': '什么是线程. 在一个程序中的多个执行线路就叫做线程。 ... 3.在用户看来，是有多个线程。但是在操作系统内核看来，并意识不到线程的存在。"用户级线程"就是"从用户视角看能看到的线程" 4.优缺点 ... 本文介绍了操作系统中用户态与核心态的概念，两者分别', 'score': 0.77261686, 'raw_content': None}, {'title': '五分钟扫盲：进程与线程基础必知 - 知乎 - 知乎专栏', 'url': 'https://zhuanlan.zhihu.com/p/403313422', 'content': '① 什么是进程. 结合上文的简单解释，下面给出进程的科学定义：进程是程序在某个数据集合上的一次运行活动，也是操作系统进行资源分配和保护的基本单位。 通俗来说，进程就是程序的一次执行过程，程序是静态的，它作为系统中的一种资源是永远存在的', 'score': 0.6649108, 'raw_content': None}]
     return {
         "contents": contents,
         "results": results
