@@ -20,7 +20,7 @@ class UserDB:
             "test@example.com": {
                 "nick_name": "测试用户",
                 "user_id": 10000000001,
-                "is_admin": False,
+                "is_admin": 0,
                 "email": "test@example.com",
                 "password": "password123",
                 "sex": "1",
