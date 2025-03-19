@@ -67,6 +67,18 @@ class Settings(BaseSettings):
     NEO4J_URL: str
     TAVILY_SEARCH_API:str
 
+    DB_DRIVER: str
+    DB_USERNAME: str
+    DB_PASSWORD: str
+    DB_HOST: str
+    DB_PORT: str
+    DB_DATABASE: str
+
+    SECRET_KEY:str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+
+    API_V1_STR: str
+    PROJECT_NAME: str
     class Config:
         env_file = ENV_PATH  # 使用确定的绝对路径
         env_file_encoding = 'utf-8'  # 确保正确处理UTF-8编码

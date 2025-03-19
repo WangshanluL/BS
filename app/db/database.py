@@ -1,18 +1,11 @@
-# database.py
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
+from app.core.config import settings
 
-# Database connection configuration using your provided information
-DRIVER = 'pymysql'
-USERNAME = 'root'
-PASSWORD = 'wsl15253021368'
-HOST = 'localhost'
-PORT = '3306'
-DATABASE = 'osgraph'
-
-DATABASE_URL = f"mysql+{DRIVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8mb4"
+# Database connection configuration
+DATABASE_URL = f"mysql+{settings.DB_DRIVER}://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}?charset=utf8mb4"
 
 # Create the engine
 engine = create_engine(
