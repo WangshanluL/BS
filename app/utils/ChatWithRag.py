@@ -34,8 +34,6 @@ async def rag_and_update_prompt(prompt: str, search_options: dict):
         neo4j_task = asyncio.create_task(ragFromNeo4j(prompt))
         tasks.append(neo4j_task)
 
-
-
     # 如果有任务需要执行，则等待完成
     if tasks:
         results = await asyncio.gather(*tasks)
@@ -53,6 +51,8 @@ async def rag_and_update_prompt(prompt: str, search_options: dict):
         if knowledge_graph_enabled or learning_materials_enabled:
             neo4j_results = results[result_index]
             neo4j_str_corpus, relevant_nodes_links = neo4j_results
+
+    # 接下来就是改prompt，如果有相关视频链接就加上，算了感觉可以直接append后面，没必要让大模型输出。让大模型输出一个比较恰当的加视频url的str，包含/n等等，后面直接插入
     LLM_PROMPT = get_os_qa_prompt(search_options,prompt,tavily_results.get("contents",""),neo4j_str_corpus)
     # 保持原始提示词
 

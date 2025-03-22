@@ -5,6 +5,7 @@ from app.utils.ai_client import client
 from app.core.log_config import logger
 from app.utils.ChatWithRag import rag_and_update_prompt
 from app.schemas.chatSchema import GetHistoryRequest, CreateMasterMessage, CreateNewChat
+from app.schemas.updateUserPromptSchema import format_video_links,get_last_three_conversation_pairs
 from app.services.chat_service import chat_history_service, master_chat_service
 from app.services.user_service import user_service
 from app.schemas.standardResponse import StandardResponse
@@ -69,7 +70,8 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
             response = await chat_history_service.get_chat_history(db, chat_id, user_id)
             if response.data:
                 history_messages = response.data.messages
-                [messages.append({"role": mess.role, "content": mess.content}) for mess in history_messages[:6]]
+                history_messages = get_last_three_conversation_pairs(history_messages)
+                [messages.append({"role": mess["role"], "content": mess["content"]}) for mess in history_messages]
 
             #search_options = parsed_data.get("search_options", {})
             # 0 0 0   什么都不需要
@@ -87,12 +89,19 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
             #  });
 
             LLM_PROMPT, relevant_nodes_links, tavily_results = await rag_and_update_prompt(user_input, search_options)
-            relevant_topics = []
+            learning_materials_enabled = search_options.get("learningMaterials", 0) == 1
+            if learning_materials_enabled:
+                relevant_topics = [rel for rel in relevant_nodes_links["nodes"] if rel["category"] == 4]
+                relevant_video_links = [{"video_title": rel["name"], "video_url": rel["url"]} for rel in
+                                        relevant_nodes_links["nodes"] if rel["category"] == 5]
+            else:
+                relevant_topics = []
+                relevant_video_links = []
 
 
             logger.info(f"LLM_PROMPT:{LLM_PROMPT}")
             messages.append({"role": "user", "content": LLM_PROMPT})
-            await manager.send_json_message({"relevant_nodes_links": relevant_nodes_links, "tavily_results": tavily_results}, websocket)
+            await manager.send_json_message({"relevant_nodes_links": relevant_nodes_links, "tavily_results": tavily_results,"relevant_topics":relevant_topics}, websocket)
             try:
                 # 创建大模型流式响应
                 completion = client.chat.completions.create(
@@ -117,7 +126,12 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
 
                 # 发送结束标记
                 create_assistant_datetime = datetime.now()
-                await manager.send_personal_message(ai_response + "[END]", websocket)
+
+                if learning_materials_enabled:
+                    resultContainVideoStr = format_video_links(ai_response,relevant_video_links)
+                    await manager.send_personal_message(resultContainVideoStr,websocket)
+                else:
+                    await manager.send_personal_message(ai_response + "[END]", websocket)
                 cre = CreateMasterMessage(
                     role="user",
                     content=user_input,
@@ -147,7 +161,7 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
                 logger.info(f"ai response :{ai_response}")
             except Exception as e:
                 logger.error(f"AI处理异常: {str(e)}")
-                await db.rollback()
+                await db.rollback()  #不加回滚的话如果这次请求（包含数据库的）失败，没法下次再接受请求
                 await manager.send_personal_message(json.dumps({
                     "type": "error",
                     "content": f"处理请求时出错: {str(e)}"

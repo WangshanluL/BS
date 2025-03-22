@@ -282,7 +282,11 @@ async def retrieve_knowledge_graph(concept_names_list: list[str]):
                     'id': next_id,
                     'name': topic.get('topic_name', 'Unknown'),
                     'category': 4,  # TopicNode
-                    'value': topic.get('description', '')
+                    'value': topic.get('description', ''),
+                    'topic_type':topic.get('topic_type',2),
+                    'topic_description':topic.get('topic_description',''),
+                    'topic_answer_reason':topic.get('topic_answer_reason',''),
+                    'topic_answer':topic.get('topic_answer','')
                 })
                 next_id += 1
 
@@ -320,7 +324,8 @@ async def retrieve_knowledge_graph(concept_names_list: list[str]):
                     'id': next_id,
                     'name': video.get('video_name', 'Unknown'),
                     'category': 5,  # VideoNode
-                    'value': video.get('description', '')
+                    'value': video.get('description', ''),
+                    'url':video.get('url', '')
                 })
                 next_id += 1
 
