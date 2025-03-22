@@ -29,6 +29,7 @@ class MasterMessage(Base):
     content = Column(Text, nullable=True, comment="Message content")
     web_reference = Column(Text, nullable=True, comment="Web references")
     gene_reference = Column(Text, nullable=True, comment="Gene references")
+    relevant_topics = Column(Text, nullable=True, comment="Gene references")
     user_id = Column(String(15), ForeignKey("user_info.user_id"), comment="User ID")
     chat_id = Column(String(50), ForeignKey("master_chat.chat_id"), comment="Chat ID")
     created_time = Column(DateTime, default=datetime.now, comment="Creation time")

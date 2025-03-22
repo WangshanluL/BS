@@ -1,30 +1,37 @@
 from typing import Dict, Any, Optional, List, Union
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.db.models.user import UserInfo, EmailCode, UserIntegralRecord
 from datetime import datetime
 
 
 class UserRepository:
-    def get_by_user_id(self, db: Session, user_id: str) -> Optional[UserInfo]:
+    async def get_by_user_id(self, db: AsyncSession, user_id: str) -> Optional[UserInfo]:
         """Get user by user_id"""
-        return db.query(UserInfo).filter(UserInfo.user_id == user_id).first()
+        result = await db.execute(select(UserInfo).filter(UserInfo.user_id == user_id))
+        return result.scalars().first()
 
-    def get_by_email(self, db: Session, email: str) -> Optional[UserInfo]:
+    async def get_by_email(self, db: AsyncSession, email: str) -> Optional[UserInfo]:
         """Get user by email"""
-        return db.query(UserInfo).filter(UserInfo.email == email).first()
+        result = await db.execute(select(UserInfo).filter(UserInfo.email == email))
+        return result.scalars().first()
 
-    def get_by_nick_name(self, db: Session, nick_name: str) -> Optional[UserInfo]:
+    async def get_by_nick_name(self, db: AsyncSession, nick_name: str) -> Optional[UserInfo]:
         """Get user by nick_name"""
-        return db.query(UserInfo).filter(UserInfo.nick_name == nick_name).first()
+        result = await db.execute(select(UserInfo).filter(UserInfo.nick_name == nick_name))
+        return result.scalars().first()
 
-    def get_by_email_and_password(self, db: Session, email: str, password: str) -> Optional[UserInfo]:
+    async def get_by_email_and_password(self, db: AsyncSession, email: str, password: str) -> Optional[UserInfo]:
         """Get user by email and password"""
-        return db.query(UserInfo).filter(
-            UserInfo.email == email,
-            UserInfo.password == password
-        ).first()
+        result = await db.execute(
+            select(UserInfo).filter(
+                UserInfo.email == email,
+                UserInfo.password == password
+            )
+        )
+        return result.scalars().first()
 
-    def create(self, db: Session, obj_in: Dict[str, Any]) -> UserInfo:
+    async def create(self, db: AsyncSession, obj_in: Dict[str, Any]) -> UserInfo:
         """Create a new user"""
         db_obj = UserInfo(
             user_id=obj_in.get("user_id"),
@@ -44,11 +51,11 @@ class UserRepository:
             image=obj_in.get("image", obj_in.get("user_id"))
         )
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
-    def update(self, db: Session, db_obj: UserInfo, obj_in: Union[Dict[str, Any], Any]) -> UserInfo:
+    async def update(self, db: AsyncSession, db_obj: UserInfo, obj_in: Union[Dict[str, Any], Any]) -> UserInfo:
         """Update user"""
         update_data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
 
@@ -57,22 +64,22 @@ class UserRepository:
                 setattr(db_obj, field, update_data[field])
 
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
-    def update_last_login(self, db: Session, user: UserInfo, ip: str, ip_address: str) -> UserInfo:
+    async def update_last_login(self, db: AsyncSession, user: UserInfo, ip: str, ip_address: str) -> UserInfo:
         """Update user's last login information"""
         user.last_login_time = datetime.now()
         user.last_login_ip = ip
         user.last_login_ip_address = ip_address
 
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
 
-    def add_integral(self, db: Session, user_id: str, oper_type: int, integral: int) -> UserIntegralRecord:
+    async def add_integral(self, db: AsyncSession, user_id: str, oper_type: int, integral: int) -> Optional[UserIntegralRecord]:
         """Add integral record and update user's integral"""
         # Create integral record
         record = UserIntegralRecord(
@@ -83,23 +90,24 @@ class UserRepository:
         )
 
         # Update user's integral
-        user = self.get_by_user_id(db, user_id)
+        user = await self.get_by_user_id(db, user_id)
         if user:
             user.total_integral = user.total_integral + integral
             user.current_integral = user.current_integral + integral
 
             db.add(record)
             db.add(user)
-            db.commit()
-            db.refresh(record)
+            await db.commit()
+            await db.refresh(record)
 
             return record
         return None
 
-    def save_email_code(self, db: Session, email: str, code: str) -> EmailCode:
+    async def save_email_code(self, db: AsyncSession, email: str, code: str) -> EmailCode:
         """Save email verification code"""
         # Check if there's an existing code
-        existing_code = db.query(EmailCode).filter(EmailCode.email == email).first()
+        result = await db.execute(select(EmailCode).filter(EmailCode.email == email))
+        existing_code = result.scalars().first()
 
         if existing_code:
             existing_code.code = code
@@ -115,22 +123,25 @@ class UserRepository:
             )
             db.add(db_obj)
 
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
-    def verify_email_code(self, db: Session, email: str, code: str) -> bool:
+    async def verify_email_code(self, db: AsyncSession, email: str, code: str) -> bool:
         """Verify email verification code"""
-        code_obj = db.query(EmailCode).filter(
-            EmailCode.email == email,
-            EmailCode.code == code,
-            EmailCode.status == False
-        ).first()
+        result = await db.execute(
+            select(EmailCode).filter(
+                EmailCode.email == email,
+                EmailCode.code == code,
+                EmailCode.status == False
+            )
+        )
+        code_obj = result.scalars().first()
 
         if code_obj:
             code_obj.status = True
             db.add(code_obj)
-            db.commit()
+            await db.commit()
             return True
         return False
 

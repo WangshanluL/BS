@@ -30,6 +30,7 @@ CREATE TABLE master_message (
   content text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT 'Message content',
   web_reference text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT 'Web references',
   gene_reference text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT 'Gene references',
+  relevant_topics text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT 'Relevant topics',
   user_id varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'User ID',
   chat_id varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Chat ID',
   created_time datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',

@@ -1,44 +1,49 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from contextlib import contextmanager
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.ext.asyncio import async_sessionmaker
 from app.core.config import settings
 
-# Database connection configuration
-DATABASE_URL = f"mysql+{settings.DB_DRIVER}://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}?charset=utf8mb4"
+# 异步数据库连接URL (注意driver前缀改为aiomysql)
+DATABASE_URL = f"mysql+aiomysql://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}?charset=utf8mb4"
 
-# Create the engine
-engine = create_engine(
+# 创建异步引擎
+engine = create_async_engine(
     DATABASE_URL,
     pool_pre_ping=True,
     pool_recycle=3600,
     pool_size=20,
-    max_overflow=20
+    max_overflow=20,
+    echo=False
 )
 
-# Create a session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# 创建异步会话工厂
+AsyncSessionLocal = async_sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+    expire_on_commit=False
+)
 
-# Base class for models
+# 模型基类
 Base = declarative_base()
 
-# Session management
-@contextmanager
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        raise e
-    finally:
-        db.close()
+# 异步上下文管理器
+async def get_db():
+    """异步上下文管理器版本"""
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise e
 
-# For FastAPI dependency
-def get_db_session():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# FastAPI依赖项
+async def get_db_session():
+    """FastAPI异步依赖项"""
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
