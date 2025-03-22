@@ -153,9 +153,9 @@ async def websocket_endpoint(websocket: WebSocket, db: AsyncSession = Depends(ge
                     relevant_topics=relevant_topics,
                     create_time=create_assistant_datetime
                 )
-
-                await chat_history_service.createMasterMessage(db, cre2)
                 await chat_history_service.createMasterMessage(db, cre)
+                await chat_history_service.createMasterMessage(db, cre2)
+
 
 
                 logger.info(f"ai response :{ai_response}")
