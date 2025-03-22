@@ -46,7 +46,32 @@ class MasterChatService:
         # Then delete the chat itself
         await master_chat_repository.delete(db, chat_id)
         return True
+    async def update_chat_access_time(self, db: AsyncSession, chat_id: str, user_id: str) -> bool:
+        """
+        更新聊天的访问时间
 
+        Args:
+            db: 数据库会话
+            chat_id: 聊天ID
+            user_id: 用户ID
+
+        Returns:
+            bool: 是否更新成功
+        """
+        # 首先检查聊天是否存在
+        chat = await master_chat_repository.get_by_chat_id(db, chat_id)
+        if not chat:
+            return False
+
+        # 验证聊天记录所属的用户ID
+        if chat.user_id != user_id:
+            return False
+
+        # 更新访问时间
+        update_data = {"created_time": datetime.now()}
+        updated_chat = await master_chat_repository.update(db, chat, update_data)
+
+        return updated_chat is not None
 
 master_chat_service = MasterChatService()
 

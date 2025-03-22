@@ -4,7 +4,7 @@ from app.utils.websocket_manager import ConnectionManager
 from app.utils.ai_client import client
 from app.core.log_config import logger
 from app.utils.ChatWithRag import rag_and_update_prompt
-from app.schemas.chatSchema import GetHistoryRequest, CreateMasterMessage, CreateNewChat
+from app.schemas.chatSchema import GetHistoryRequest, CreateMasterMessage, CreateNewChat,GetUserChats,UpdateAccessTimeRequest
 from app.schemas.updateUserPromptSchema import format_video_links,get_last_three_conversation_pairs
 from app.services.chat_service import chat_history_service, master_chat_service
 from app.services.user_service import user_service
@@ -211,3 +211,69 @@ async def createNewChat(request: CreateNewChat, db: AsyncSession = Depends(get_d
             data=[]
         )
         return res
+
+
+@router.post("/getUserChats")
+async def getUserChats(request: GetUserChats, db: AsyncSession = Depends(get_db)):
+    try:
+        user_id = request.user_id
+        chats = await master_chat_service.get_user_chats(db, user_id) #注意返回的是数据库对象
+
+        # 转换数据库对象为字典列表
+        chat_list = [
+            {
+                "id": chat.id,
+                "chat_id": chat.chat_id,
+                "title": chat.title,
+                "created_time": chat.created_time.isoformat() if hasattr(chat.created_time,
+                                                                         'isoformat') else chat.created_time
+            } for chat in chats
+        ]
+
+        return StandardResponse(
+            code=200,
+            message="获取成功",
+            data=chat_list
+        )
+
+    except Exception as e:
+        return StandardResponse(
+            code=500,
+            message=f"获取用户聊天记录失败: {str(e)}",
+            data=[]
+        )
+
+
+@router.post("/updateAccessTime")
+async def update_access_time(request: UpdateAccessTimeRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        chat_id = request.chat_id
+        user_id = request.user_id
+
+        # 调用服务层方法更新访问时间
+        success = await master_chat_service.update_chat_access_time(
+            db,
+            chat_id=chat_id,
+            user_id=user_id,
+
+        )
+
+        if not success:
+            return StandardResponse(
+                code=404,
+                message="聊天记录不存在或不属于该用户",
+                data=False
+            )
+
+        return StandardResponse(
+            code=200,
+            message="更新访问时间成功",
+            data=True
+        )
+
+    except Exception as e:
+        return StandardResponse(
+            code=500,
+            message=f"更新访问时间失败: {str(e)}",
+            data=False
+        )

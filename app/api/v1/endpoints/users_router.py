@@ -27,6 +27,7 @@ captcha_store = {}
 
 @router.get("/captcha")
 async def get_captcha():
+    print("qaq")
     captcha_code = generate_captcha()
     captcha_image = captcha.generate(captcha_code)
     captcha_store[captcha_code] = captcha_code.lower()

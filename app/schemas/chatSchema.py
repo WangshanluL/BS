@@ -53,3 +53,8 @@ class CreateMasterMessage(BaseModel):
     #     return result
 class CreateNewChat(BaseModel):
     user_id : str
+class GetUserChats(BaseModel):
+    user_id : str
+class UpdateAccessTimeRequest(BaseModel):
+    chat_id : str
+    user_id : str

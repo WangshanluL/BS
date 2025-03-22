@@ -18,8 +18,21 @@ class MasterChatRepository:
         return result.scalars().first()
 
     async def get_by_user_id(self, db: AsyncSession, user_id: str) -> List[MasterChat]:
-        """Get all chats for a user"""
-        result = await db.execute(select(MasterChat).filter(MasterChat.user_id == user_id))
+        """
+        Get all chats for a user, ordered by creation time (newest first)
+
+        Args:
+            db (AsyncSession): The database session
+            user_id (str): The ID of the user
+
+        Returns:
+            List[MasterChat]: List of user's chats ordered by creation time descending
+        """
+        result = await db.execute(
+            select(MasterChat)
+            .filter(MasterChat.user_id == user_id)
+            .order_by(MasterChat.created_time.desc())
+        )
         return result.scalars().all()
 
     async def create(self, db: AsyncSession, obj_in: Dict[str, Any]) -> MasterChat:
@@ -54,6 +67,8 @@ class MasterChatRepository:
         if db_obj:
             await db.delete(db_obj)
             await db.commit()
+
+
 
 
 class MasterMessageRepository:
